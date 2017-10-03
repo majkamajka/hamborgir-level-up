@@ -70,7 +70,11 @@
 "use strict";
 
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _game = __webpack_require__(10);
+
+var _game2 = _interopRequireDefault(_game);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -115,172 +119,9 @@ document.addEventListener('DOMContentLoaded', function () {
     this.y = Math.floor(Math.random() * 10);
   };
 
-  var Game = function () {
-    function Game() {
-      _classCallCheck(this, Game);
-
-      this.board = document.querySelectorAll('#board div');
-      this.cat = new Cat();
-      this.hamborgir = new Hamborgir();
-      this.score = 0;
-      this.interval = 1000;
-      this.dogeIndexes = [];
-    }
-
-    _createClass(Game, [{
-      key: 'getIndex',
-      value: function getIndex(x, y) {
-        return x + y * 10;
-      }
-    }, {
-      key: 'showCat',
-      value: function showCat() {
-        catIndex = this.getIndex(this.cat.x, this.cat.y);
-        if (this.board[catIndex]) {
-          this.board[catIndex].classList.add('cat');
-        }
-      }
-    }, {
-      key: 'showHamborgir',
-      value: function showHamborgir() {
-        hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
-        if (this.dogeIndexes.includes(hamborgirIndex)) {
-          this.hamborgir = new Hamborgir();
-          this.showHamborgir();
-        } else {
-          this.board[hamborgirIndex].classList.add('hamborgir');
-        }
-      }
-    }, {
-      key: 'showDoge',
-      value: function showDoge() {
-        this.doge = new Doge();
-        dogeIndex = this.getIndex(this.doge.x, this.doge.y);
-        catIndex = this.getIndex(this.cat.x, this.cat.y);
-        hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
-        if (this.dogeIndexes.includes(dogeIndex) || dogeIndex === catIndex || dogeIndex === hamborgirIndex) {
-          this.showDoge();
-        } else {
-          this.dogeIndexes.push(dogeIndex);
-          this.board[dogeIndex].classList.add('doge');
-        }
-      }
-    }, {
-      key: 'moveCat',
-      value: function moveCat() {
-        if (this.cat.direction === 'right') {
-          this.cat.x = this.cat.x + 1;
-        } else if (this.cat.direction === 'left') {
-          this.cat.x = this.cat.x - 1;
-        } else if (this.cat.direction === 'up') {
-          this.cat.y = this.cat.y - 1;
-        } else if (this.cat.direction === 'down') {
-          this.cat.y = this.cat.y + 1;
-        }
-        this.gameOver();
-        this.checkHamborgirCollision();
-        this.showCat();
-      }
-    }, {
-      key: 'hideVisibleCat',
-      value: function hideVisibleCat() {
-        var visibleCat = document.querySelector('.cat');
-        visibleCat.classList.remove('cat');
-      }
-    }, {
-      key: 'turnCat',
-      value: function turnCat(event) {
-        switch (event.which) {
-          case 37:
-            this.cat.direction = 'left';
-            break;
-          case 38:
-            this.cat.direction = 'up';
-            break;
-          case 39:
-            this.cat.direction = 'right';
-            break;
-          case 40:
-            this.cat.direction = 'down';
-            break;
-        }
-      }
-    }, {
-      key: 'checkHamborgirCollision',
-      value: function checkHamborgirCollision() {
-        hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
-        catIndex = this.getIndex(this.cat.x, this.cat.y);
-        if (catIndex === hamborgirIndex) {
-          hamborgirAudio.play();
-          this.board[hamborgirIndex].classList.remove('hamborgir');
-          this.score += 1;
-          document.querySelector('#score').innerText = this.score;
-          this.hamborgir = new Hamborgir();
-
-          if (dogeMode.classList.contains('selected') && this.score % 3 === 0) {
-            this.showDoge();
-          }
-
-          this.showHamborgir();
-
-          if (runMode.classList.contains('selected') && this.score > 0 && this.score % 3 === 0) {
-            gameSpeed -= 10;
-          }
-        }
-      }
-    }, {
-      key: 'gameOver',
-      value: function gameOver() {
-        if (this.cat.x < 0 || this.cat.x > 9 || this.cat.y < 0 || this.cat.y > 9 || this.dogeIndexes.includes(catIndex)) {
-
-          clearInterval(this.startIntervalId);
-          if (this.dogeIndexes.includes(catIndex)) {
-            dogeAudio.play();
-            setTimeout(function () {
-              dogeAudio.play();
-            }, 600);
-          } else {
-            gameoverAudio.play();
-          }
-          this.cat.x = -1;
-          this.cat.y = -1;
-          document.querySelector('#over').classList.remove('invisible');
-          document.querySelector('#over .over span').innerText = this.score;
-          document.querySelector('.hamborgir').classList.remove('hamborgir');
-          doges = document.querySelectorAll('.doge');
-          doges.forEach(function (e) {
-            return e.classList.remove('doge');
-          });
-          gameOn = false;
-        }
-      }
-    }, {
-      key: 'startGame',
-      value: function startGame() {
-        var that = this;
-
-        var catTimeout = function catTimeout() {
-          that.hideVisibleCat();
-          that.moveCat();
-          if (gameOn === true) {
-            setTimeout(catTimeout, gameSpeed);
-          }
-        };
-        setTimeout(catTimeout, gameSpeed);
-
-        // this.startIntervalId = setInterval(() => {
-        //   that.hideVisibleCat();
-        //   that.moveCat();
-        // }, 250);
-      }
-    }]);
-
-    return Game;
-  }();
-
   function start() {
     startAudio.play();
-    var newGame = new Game();
+    var newGame = new _game2.default();
     newGame.showCat();
     newGame.showHamborgir();
     newGame.startGame();
@@ -298,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
       selectMenu = false;
       document.querySelector('#start-game').classList.add('invisible');
       startAudio.play();
-      var newGame = new Game();
+      var newGame = new _game2.default();
       newGame.showCat();
       newGame.showHamborgir();
       newGame.startGame();
@@ -315,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('#over').classList.add('invisible');
     document.querySelector('#score').innerText = 0;
     startAudio.play();
-    var newGame = new Game();
+    var newGame = new _game2.default();
     newGame.showCat();
     newGame.showHamborgir();
     newGame.startGame();
@@ -943,6 +784,186 @@ module.exports = function (css) {
 	return fixedCss;
 };
 
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Game = function () {
+  function Game() {
+    _classCallCheck(this, Game);
+
+    this.board = document.querySelectorAll('#board div');
+    this.cat = new Cat();
+    this.hamborgir = new Hamborgir();
+    this.score = 0;
+    this.interval = 1000;
+    this.dogeIndexes = [];
+  }
+
+  _createClass(Game, [{
+    key: 'getIndex',
+    value: function getIndex(x, y) {
+      return x + y * 10;
+    }
+  }, {
+    key: 'showCat',
+    value: function showCat() {
+      catIndex = this.getIndex(this.cat.x, this.cat.y);
+      if (this.board[catIndex]) {
+        this.board[catIndex].classList.add('cat');
+      }
+    }
+  }, {
+    key: 'showHamborgir',
+    value: function showHamborgir() {
+      hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
+      if (this.dogeIndexes.includes(hamborgirIndex)) {
+        this.hamborgir = new Hamborgir();
+        this.showHamborgir();
+      } else {
+        this.board[hamborgirIndex].classList.add('hamborgir');
+      }
+    }
+  }, {
+    key: 'showDoge',
+    value: function showDoge() {
+      this.doge = new Doge();
+      dogeIndex = this.getIndex(this.doge.x, this.doge.y);
+      catIndex = this.getIndex(this.cat.x, this.cat.y);
+      hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
+      if (this.dogeIndexes.includes(dogeIndex) || dogeIndex === catIndex || dogeIndex === hamborgirIndex) {
+        this.showDoge();
+      } else {
+        this.dogeIndexes.push(dogeIndex);
+        this.board[dogeIndex].classList.add('doge');
+      }
+    }
+  }, {
+    key: 'moveCat',
+    value: function moveCat() {
+      if (this.cat.direction === 'right') {
+        this.cat.x = this.cat.x + 1;
+      } else if (this.cat.direction === 'left') {
+        this.cat.x = this.cat.x - 1;
+      } else if (this.cat.direction === 'up') {
+        this.cat.y = this.cat.y - 1;
+      } else if (this.cat.direction === 'down') {
+        this.cat.y = this.cat.y + 1;
+      }
+      this.gameOver();
+      this.checkHamborgirCollision();
+      this.showCat();
+    }
+  }, {
+    key: 'hideVisibleCat',
+    value: function hideVisibleCat() {
+      var visibleCat = document.querySelector('.cat');
+      visibleCat.classList.remove('cat');
+    }
+  }, {
+    key: 'turnCat',
+    value: function turnCat(event) {
+      switch (event.which) {
+        case 37:
+          this.cat.direction = 'left';
+          break;
+        case 38:
+          this.cat.direction = 'up';
+          break;
+        case 39:
+          this.cat.direction = 'right';
+          break;
+        case 40:
+          this.cat.direction = 'down';
+          break;
+      }
+    }
+  }, {
+    key: 'checkHamborgirCollision',
+    value: function checkHamborgirCollision() {
+      hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
+      catIndex = this.getIndex(this.cat.x, this.cat.y);
+      if (catIndex === hamborgirIndex) {
+        hamborgirAudio.play();
+        this.board[hamborgirIndex].classList.remove('hamborgir');
+        this.score += 1;
+        document.querySelector('#score').innerText = this.score;
+        this.hamborgir = new Hamborgir();
+
+        if (dogeMode.classList.contains('selected') && this.score % 3 === 0) {
+          this.showDoge();
+        }
+
+        this.showHamborgir();
+
+        if (runMode.classList.contains('selected') && this.score > 0 && this.score % 3 === 0) {
+          gameSpeed -= 10;
+        }
+      }
+    }
+  }, {
+    key: 'gameOver',
+    value: function gameOver() {
+      if (this.cat.x < 0 || this.cat.x > 9 || this.cat.y < 0 || this.cat.y > 9 || this.dogeIndexes.includes(catIndex)) {
+
+        clearInterval(this.startIntervalId);
+        if (this.dogeIndexes.includes(catIndex)) {
+          dogeAudio.play();
+          setTimeout(function () {
+            dogeAudio.play();
+          }, 600);
+        } else {
+          gameoverAudio.play();
+        }
+        this.cat.x = -1;
+        this.cat.y = -1;
+        document.querySelector('#over').classList.remove('invisible');
+        document.querySelector('#over .over span').innerText = this.score;
+        document.querySelector('.hamborgir').classList.remove('hamborgir');
+        doges = document.querySelectorAll('.doge');
+        doges.forEach(function (e) {
+          return e.classList.remove('doge');
+        });
+        gameOn = false;
+      }
+    }
+  }, {
+    key: 'startGame',
+    value: function startGame() {
+      var that = this;
+
+      var catTimeout = function catTimeout() {
+        that.hideVisibleCat();
+        that.moveCat();
+        if (gameOn === true) {
+          setTimeout(catTimeout, gameSpeed);
+        }
+      };
+      setTimeout(catTimeout, gameSpeed);
+
+      // this.startIntervalId = setInterval(() => {
+      //   that.hideVisibleCat();
+      //   that.moveCat();
+      // }, 250);
+    }
+  }]);
+
+  return Game;
+}();
+
+exports.default = Game;
 
 /***/ })
 /******/ ]);
