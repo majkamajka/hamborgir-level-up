@@ -70,15 +70,12 @@
 "use strict";
 
 
-var _game = __webpack_require__(10);
-
-var _game2 = _interopRequireDefault(_game);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 document.addEventListener('DOMContentLoaded', function () {
+
   __webpack_require__(1);
 
   var hamborgirIndex = 0;
@@ -96,6 +93,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var runMode = document.querySelector('#run-mode');
   var dogeMode = document.querySelector('#doge-mode');
   var selectMenu = true;
+  var swiezakIndex = 0;
+  var swiezaki = ['../images/grzyb.jpg', '../images/kalafior.jpg', '../images/truskawka.jpg', '../images/brokul.jpg'];
 
   var Cat = function Cat() {
     _classCallCheck(this, Cat);
@@ -119,9 +118,179 @@ document.addEventListener('DOMContentLoaded', function () {
     this.y = Math.floor(Math.random() * 10);
   };
 
+  var Game = function () {
+    function Game() {
+      _classCallCheck(this, Game);
+
+      this.board = document.querySelectorAll('#board div');
+      this.cat = new Cat();
+      this.hamborgir = new Hamborgir();
+      this.score = 0;
+      this.interval = 1000;
+      this.dogeIndexes = [];
+    }
+
+    _createClass(Game, [{
+      key: 'getIndex',
+      value: function getIndex(x, y) {
+        return x + y * 10;
+      }
+    }, {
+      key: 'showCat',
+      value: function showCat() {
+        catIndex = this.getIndex(this.cat.x, this.cat.y);
+        if (this.board[catIndex]) {
+          this.board[catIndex].classList.add('cat');
+        }
+      }
+    }, {
+      key: 'showHamborgir',
+      value: function showHamborgir() {
+        hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
+        swiezakIndex = Math.round(Math.random() * (swiezaki.length - 1));
+        console.log(swiezakIndex);
+        if (this.dogeIndexes.includes(hamborgirIndex)) {
+          this.hamborgir = new Hamborgir();
+          this.showHamborgir();
+        } else {
+          this.board[hamborgirIndex].classList.add('hamborgir');
+          this.board[hamborgirIndex].style.backgroundImage = 'url(' + swiezaki[swiezakIndex] + ')';
+          //this.board[hamborgirIndex].
+          //this.board[hamborgirIndex].style.backgroundImage = "images/cat.png";
+          console.log(this.board[hamborgirIndex]);
+        }
+      }
+    }, {
+      key: 'showDoge',
+      value: function showDoge() {
+        this.doge = new Doge();
+        dogeIndex = this.getIndex(this.doge.x, this.doge.y);
+        catIndex = this.getIndex(this.cat.x, this.cat.y);
+        hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
+        if (this.dogeIndexes.includes(dogeIndex) || dogeIndex === catIndex || dogeIndex === hamborgirIndex) {
+          this.showDoge();
+        } else {
+          this.dogeIndexes.push(dogeIndex);
+          this.board[dogeIndex].classList.add('doge');
+        }
+      }
+    }, {
+      key: 'moveCat',
+      value: function moveCat() {
+        if (this.cat.direction === 'right') {
+          this.cat.x = this.cat.x + 1;
+        } else if (this.cat.direction === 'left') {
+          this.cat.x = this.cat.x - 1;
+        } else if (this.cat.direction === 'up') {
+          this.cat.y = this.cat.y - 1;
+        } else if (this.cat.direction === 'down') {
+          this.cat.y = this.cat.y + 1;
+        }
+        this.gameOver();
+        this.checkHamborgirCollision();
+        this.showCat();
+      }
+    }, {
+      key: 'hideVisibleCat',
+      value: function hideVisibleCat() {
+        var visibleCat = document.querySelector('.cat');
+        visibleCat.classList.remove('cat');
+      }
+    }, {
+      key: 'turnCat',
+      value: function turnCat(event) {
+        switch (event.which) {
+          case 37:
+            this.cat.direction = 'left';
+            break;
+          case 38:
+            this.cat.direction = 'up';
+            break;
+          case 39:
+            this.cat.direction = 'right';
+            break;
+          case 40:
+            this.cat.direction = 'down';
+            break;
+        }
+      }
+    }, {
+      key: 'checkHamborgirCollision',
+      value: function checkHamborgirCollision() {
+        hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
+        catIndex = this.getIndex(this.cat.x, this.cat.y);
+        if (catIndex === hamborgirIndex) {
+          hamborgirAudio.play();
+          this.board[hamborgirIndex].style.backgroundImage = "";
+          this.board[hamborgirIndex].classList.remove('hamborgir');
+          this.score += 1;
+          document.querySelector('#score').innerText = this.score;
+          this.hamborgir = new Hamborgir();
+
+          if (dogeMode.classList.contains('selected') && this.score % 3 === 0) {
+            this.showDoge();
+          }
+
+          this.showHamborgir();
+
+          if (runMode.classList.contains('selected') && this.score > 0 && this.score % 3 === 0) {
+            gameSpeed -= 10;
+          }
+        }
+      }
+    }, {
+      key: 'gameOver',
+      value: function gameOver() {
+        if (this.cat.x < 0 || this.cat.x > 9 || this.cat.y < 0 || this.cat.y > 9 || this.dogeIndexes.includes(catIndex)) {
+
+          clearInterval(this.startIntervalId);
+          if (this.dogeIndexes.includes(catIndex)) {
+            dogeAudio.play();
+            setTimeout(function () {
+              dogeAudio.play();
+            }, 600);
+          } else {
+            gameoverAudio.play();
+          }
+          this.cat.x = -1;
+          this.cat.y = -1;
+          document.querySelector('#over').classList.remove('invisible');
+          document.querySelector('#over .over span').innerText = this.score;
+          document.querySelector('.hamborgir').classList.remove('hamborgir');
+          doges = document.querySelectorAll('.doge');
+          doges.forEach(function (e) {
+            return e.classList.remove('doge');
+          });
+          gameOn = false;
+        }
+      }
+    }, {
+      key: 'startGame',
+      value: function startGame() {
+        var that = this;
+
+        var catTimeout = function catTimeout() {
+          that.hideVisibleCat();
+          that.moveCat();
+          if (gameOn === true) {
+            setTimeout(catTimeout, gameSpeed);
+          }
+        };
+        setTimeout(catTimeout, gameSpeed);
+
+        // this.startIntervalId = setInterval(() => {
+        //   that.hideVisibleCat();
+        //   that.moveCat();
+        // }, 250);
+      }
+    }]);
+
+    return Game;
+  }();
+
   function start() {
     startAudio.play();
-    var newGame = new _game2.default();
+    var newGame = new Game();
     newGame.showCat();
     newGame.showHamborgir();
     newGame.startGame();
@@ -135,11 +304,11 @@ document.addEventListener('DOMContentLoaded', function () {
       selectAudio.play();
       runMode.classList.toggle('selected');
       dogeMode.classList.toggle('selected');
-    } else if (e.which === 13) {
+    } else if (e.which === 13 && selectMenu === true) {
       selectMenu = false;
       document.querySelector('#start-game').classList.add('invisible');
       startAudio.play();
-      var newGame = new _game2.default();
+      var newGame = new Game();
       newGame.showCat();
       newGame.showHamborgir();
       newGame.startGame();
@@ -156,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('#over').classList.add('invisible');
     document.querySelector('#score').innerText = 0;
     startAudio.play();
-    var newGame = new _game2.default();
+    var newGame = new Game();
     newGame.showCat();
     newGame.showHamborgir();
     newGame.startGame();
@@ -220,7 +389,7 @@ exports = module.exports = __webpack_require__(3)(undefined);
 
 
 // module
-exports.push([module.i, "* {\n  box-sizing: border-box;\n  font-family: \"Emulogic\", \"Courier New\", sans-serif;\n  padding: 0;\n  margin: 0 auto; }\n\n@font-face {\n  font-family: Emulogic;\n  src: url(" + __webpack_require__(4) + "); }\n\nbody {\n  background-color: black; }\n\n.center-flex, .start-game, .game-over {\n  display: flex;\n  justify-content: center;\n  align-items: center; }\n\n.btn {\n  margin-top: 50px;\n  font-size: 30px;\n  padding: 10px;\n  display: block; }\n\n.start-game {\n  height: 100%;\n  width: 100%;\n  background-color: black;\n  position: absolute;\n  top: 0;\n  text-align: center; }\n  .start-game .start {\n    color: white;\n    font-size: 35px;\n    width: 700px; }\n    .start-game .start h1 {\n      font-size: 50px; }\n    .start-game .start h2 {\n      font-size: 30px;\n      margin-top: 50px; }\n    .start-game .start p {\n      margin-top: 30px;\n      font-size: 12px;\n      line-height: 26px; }\n      .start-game .start p span {\n        display: inline-block;\n        font-size: 20px; }\n        .start-game .start p span.rotate {\n          margin-left: 10px;\n          transform: rotate(180deg); }\n    .start-game .start .game-mode {\n      margin-top: 10px;\n      text-align: left;\n      display: inline-block;\n      list-style: none;\n      font-size: 26px; }\n      .start-game .start .game-mode li {\n        padding: 10px; }\n        .start-game .start .game-mode li.selected {\n          text-shadow: 0 0 20px white;\n          list-style-type: square; }\n\n#board {\n  width: 640px;\n  height: 640px;\n  margin: 1em auto; }\n\n#board > div {\n  border: 1px solid black;\n  float: left;\n  width: 64px;\n  height: 64px;\n  background-color: white; }\n\nsection#scoring div {\n  width: 10em;\n  height: 5em;\n  text-align: center;\n  padding: 0.5em;\n  /*background-color: rgba(211,211,211, 0.75);\n  border: 1px solid lightgray;\n  border-radius: 1px;\n  box-shadow: 1px 1px 5px 1px lightgray;*/\n  font-size: 20px;\n  margin: 0.5em auto;\n  color: white; }\n\n.board {\n  height: 600px;\n  width: 600px; }\n  .board div {\n    float: left;\n    display: inline-block;\n    height: 60px;\n    width: 60px;\n    background-color: gray;\n    border: 1px solid black;\n    box-sizing: border-box; }\n    .board div.cat {\n      background-image: url(" + __webpack_require__(5) + ");\n      background-size: contain; }\n    .board div.hamborgir {\n      background-image: url(" + __webpack_require__(6) + ");\n      background-size: contain; }\n    .board div.doge {\n      background-image: url(" + __webpack_require__(7) + ");\n      background-size: contain;\n      background-repeat: no-repeat; }\n\n.game-over {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  z-index: 1;\n  background-color: black; }\n  .game-over .over {\n    text-align: center;\n    font-size: 24px;\n    color: white; }\n\n.invisible {\n  display: none; }\n", ""]);
+exports.push([module.i, "* {\n  box-sizing: border-box;\n  font-family: \"Emulogic\", \"Courier New\", sans-serif;\n  padding: 0;\n  margin: 0 auto; }\n\n@font-face {\n  font-family: Emulogic;\n  src: url(" + __webpack_require__(4) + "); }\n\nbody {\n  background-color: black; }\n\n.center-flex, .start-game, .game-over {\n  display: flex;\n  justify-content: center;\n  align-items: center; }\n\n.btn {\n  margin-top: 50px;\n  font-size: 30px;\n  padding: 10px;\n  display: block; }\n\n.start-game {\n  height: 100%;\n  width: 100%;\n  background-color: black;\n  position: absolute;\n  top: 0;\n  text-align: center; }\n  .start-game .start {\n    color: white;\n    font-size: 35px;\n    width: 700px; }\n    .start-game .start h1 {\n      font-size: 50px; }\n    .start-game .start h2 {\n      font-size: 30px;\n      margin-top: 50px; }\n    .start-game .start p {\n      margin-top: 30px;\n      font-size: 12px;\n      line-height: 26px; }\n      .start-game .start p span {\n        display: inline-block;\n        font-size: 20px; }\n        .start-game .start p span.rotate {\n          margin-left: 10px;\n          transform: rotate(180deg); }\n    .start-game .start .game-mode {\n      margin-top: 10px;\n      text-align: left;\n      display: inline-block;\n      list-style: none;\n      font-size: 26px; }\n      .start-game .start .game-mode li {\n        padding: 10px; }\n        .start-game .start .game-mode li.selected {\n          text-shadow: 0 0 20px white;\n          list-style-type: square; }\n\n#board {\n  width: 640px;\n  height: 640px;\n  margin: 1em auto; }\n\n#board > div {\n  border: 1px solid black;\n  float: left;\n  width: 64px;\n  height: 64px;\n  background-color: white; }\n\n#scoring {\n  width: 15em;\n  height: 5em;\n  text-align: center;\n  padding: 0.5em;\n  /*background-color: rgba(211,211,211, 0.75);\n  border: 1px solid lightgray;\n  border-radius: 1px;\n  box-shadow: 1px 1px 5px 1px lightgray;*/\n  font-size: 20px;\n  margin: 0.5em auto;\n  color: white; }\n  #scoring img {\n    height: 70px; }\n\n.board {\n  height: 600px;\n  width: 600px; }\n  .board div {\n    float: left;\n    display: inline-block;\n    height: 60px;\n    width: 60px;\n    background-color: gray;\n    border: 1px solid black;\n    box-sizing: border-box; }\n    .board div.cat {\n      background-image: url(" + __webpack_require__(5) + ");\n      background-size: contain; }\n    .board div.hamborgir {\n      background-image: url(" + __webpack_require__(6) + ");\n      background-size: contain;\n      background-repeat: no-repeat; }\n    .board div.doge {\n      background-image: url(" + __webpack_require__(7) + ");\n      background-size: contain;\n      background-repeat: no-repeat; }\n\n.game-over {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  z-index: 1;\n  background-color: black; }\n  .game-over .over {\n    text-align: center;\n    font-size: 24px;\n    color: white; }\n    .game-over .over img {\n      height: 100px; }\n\n.invisible {\n  display: none; }\n", ""]);
 
 // exports
 
@@ -317,13 +486,13 @@ module.exports = __webpack_require__.p + "./bin/b10849c899982654fae3f01d02269043
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "./bin/74aab79a5fede7d59ca2d69756668541.png";
+module.exports = __webpack_require__.p + "./bin/547547ca051623817363f88bded064f8.jpg";
 
 /***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "./bin/b56103a8d00c69f1a051f0f36cc5d58e.png";
+module.exports = __webpack_require__.p + "./bin/da8e90428c528a410c7818d05507c478.jpg";
 
 /***/ }),
 /* 7 */
@@ -784,186 +953,6 @@ module.exports = function (css) {
 	return fixedCss;
 };
 
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Game = function () {
-  function Game() {
-    _classCallCheck(this, Game);
-
-    this.board = document.querySelectorAll('#board div');
-    this.cat = new Cat();
-    this.hamborgir = new Hamborgir();
-    this.score = 0;
-    this.interval = 1000;
-    this.dogeIndexes = [];
-  }
-
-  _createClass(Game, [{
-    key: 'getIndex',
-    value: function getIndex(x, y) {
-      return x + y * 10;
-    }
-  }, {
-    key: 'showCat',
-    value: function showCat() {
-      catIndex = this.getIndex(this.cat.x, this.cat.y);
-      if (this.board[catIndex]) {
-        this.board[catIndex].classList.add('cat');
-      }
-    }
-  }, {
-    key: 'showHamborgir',
-    value: function showHamborgir() {
-      hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
-      if (this.dogeIndexes.includes(hamborgirIndex)) {
-        this.hamborgir = new Hamborgir();
-        this.showHamborgir();
-      } else {
-        this.board[hamborgirIndex].classList.add('hamborgir');
-      }
-    }
-  }, {
-    key: 'showDoge',
-    value: function showDoge() {
-      this.doge = new Doge();
-      dogeIndex = this.getIndex(this.doge.x, this.doge.y);
-      catIndex = this.getIndex(this.cat.x, this.cat.y);
-      hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
-      if (this.dogeIndexes.includes(dogeIndex) || dogeIndex === catIndex || dogeIndex === hamborgirIndex) {
-        this.showDoge();
-      } else {
-        this.dogeIndexes.push(dogeIndex);
-        this.board[dogeIndex].classList.add('doge');
-      }
-    }
-  }, {
-    key: 'moveCat',
-    value: function moveCat() {
-      if (this.cat.direction === 'right') {
-        this.cat.x = this.cat.x + 1;
-      } else if (this.cat.direction === 'left') {
-        this.cat.x = this.cat.x - 1;
-      } else if (this.cat.direction === 'up') {
-        this.cat.y = this.cat.y - 1;
-      } else if (this.cat.direction === 'down') {
-        this.cat.y = this.cat.y + 1;
-      }
-      this.gameOver();
-      this.checkHamborgirCollision();
-      this.showCat();
-    }
-  }, {
-    key: 'hideVisibleCat',
-    value: function hideVisibleCat() {
-      var visibleCat = document.querySelector('.cat');
-      visibleCat.classList.remove('cat');
-    }
-  }, {
-    key: 'turnCat',
-    value: function turnCat(event) {
-      switch (event.which) {
-        case 37:
-          this.cat.direction = 'left';
-          break;
-        case 38:
-          this.cat.direction = 'up';
-          break;
-        case 39:
-          this.cat.direction = 'right';
-          break;
-        case 40:
-          this.cat.direction = 'down';
-          break;
-      }
-    }
-  }, {
-    key: 'checkHamborgirCollision',
-    value: function checkHamborgirCollision() {
-      hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
-      catIndex = this.getIndex(this.cat.x, this.cat.y);
-      if (catIndex === hamborgirIndex) {
-        hamborgirAudio.play();
-        this.board[hamborgirIndex].classList.remove('hamborgir');
-        this.score += 1;
-        document.querySelector('#score').innerText = this.score;
-        this.hamborgir = new Hamborgir();
-
-        if (dogeMode.classList.contains('selected') && this.score % 3 === 0) {
-          this.showDoge();
-        }
-
-        this.showHamborgir();
-
-        if (runMode.classList.contains('selected') && this.score > 0 && this.score % 3 === 0) {
-          gameSpeed -= 10;
-        }
-      }
-    }
-  }, {
-    key: 'gameOver',
-    value: function gameOver() {
-      if (this.cat.x < 0 || this.cat.x > 9 || this.cat.y < 0 || this.cat.y > 9 || this.dogeIndexes.includes(catIndex)) {
-
-        clearInterval(this.startIntervalId);
-        if (this.dogeIndexes.includes(catIndex)) {
-          dogeAudio.play();
-          setTimeout(function () {
-            dogeAudio.play();
-          }, 600);
-        } else {
-          gameoverAudio.play();
-        }
-        this.cat.x = -1;
-        this.cat.y = -1;
-        document.querySelector('#over').classList.remove('invisible');
-        document.querySelector('#over .over span').innerText = this.score;
-        document.querySelector('.hamborgir').classList.remove('hamborgir');
-        doges = document.querySelectorAll('.doge');
-        doges.forEach(function (e) {
-          return e.classList.remove('doge');
-        });
-        gameOn = false;
-      }
-    }
-  }, {
-    key: 'startGame',
-    value: function startGame() {
-      var that = this;
-
-      var catTimeout = function catTimeout() {
-        that.hideVisibleCat();
-        that.moveCat();
-        if (gameOn === true) {
-          setTimeout(catTimeout, gameSpeed);
-        }
-      };
-      setTimeout(catTimeout, gameSpeed);
-
-      // this.startIntervalId = setInterval(() => {
-      //   that.hideVisibleCat();
-      //   that.moveCat();
-      // }, 250);
-    }
-  }]);
-
-  return Game;
-}();
-
-exports.default = Game;
 
 /***/ })
 /******/ ]);

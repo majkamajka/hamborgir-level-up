@@ -92,8 +92,8 @@ body {
   background-color: white;
 }
 
-section#scoring div {
-  width: 10em;
+#scoring {
+  width: 15em;
   height: 5em;
   text-align: center;
   padding: 0.5em;
@@ -104,6 +104,9 @@ section#scoring div {
   font-size: 20px;
   margin: 0.5em auto;
   color: white;
+  img {
+    height: 70px;
+  }
 }
 
 
@@ -119,12 +122,19 @@ section#scoring div {
     border: 1px solid black;
     box-sizing: border-box;
     &.cat {
-     background-image: url('../images/cat.png');
+     background-image: url('../images/nosacz.jpg');
      background-size: contain;
     }
+    // &.cat-right {
+    //  background-image: url('../images/nosacz.jpg');
+    //  transform: scaleX(-1);
+    //  background-size: contain;
+    // }
+
     &.hamborgir {
-      background-image: url('../images/borgir-big.png');
+      background-image: url('../images/brokul.jpg');
       background-size: contain;
+      background-repeat: no-repeat;
     }
     &.doge {
       background-image: url('../images/doge-head.png');
@@ -161,6 +171,9 @@ section#scoring div {
     text-align: center;
     font-size: 24px;
     color: white;
+    img {
+      height: 100px;
+    }
   }
 }
 
