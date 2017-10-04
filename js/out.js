@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var dogeMode = document.querySelector('#doge-mode');
   var selectMenu = true;
   var swiezakIndex = 0;
-  var swiezaki = ['../images/grzyb.jpg', '../images/kalafior.jpg', '../images/truskawka.jpg', '../images/brokul.jpg'];
+  var swiezaki = ['./images/grzyb.jpg', './images/kalafior.jpg', './images/truskawka.jpg', './images/brokul.jpg'];
 
   var Cat = function Cat() {
     _classCallCheck(this, Cat);
@@ -148,7 +148,6 @@ document.addEventListener('DOMContentLoaded', function () {
       value: function showHamborgir() {
         hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
         swiezakIndex = Math.round(Math.random() * (swiezaki.length - 1));
-        console.log(swiezakIndex);
         if (this.dogeIndexes.includes(hamborgirIndex)) {
           this.hamborgir = new Hamborgir();
           this.showHamborgir();
@@ -157,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
           this.board[hamborgirIndex].style.backgroundImage = 'url(' + swiezaki[swiezakIndex] + ')';
           //this.board[hamborgirIndex].
           //this.board[hamborgirIndex].style.backgroundImage = "images/cat.png";
-          console.log(this.board[hamborgirIndex]);
+          //console.log(this.board[hamborgirIndex]);
         }
       }
     }, {
@@ -256,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
           this.cat.y = -1;
           document.querySelector('#over').classList.remove('invisible');
           document.querySelector('#over .over span').innerText = this.score;
+          document.querySelector('.hamborgir').style.backgroundImage = "";
           document.querySelector('.hamborgir').classList.remove('hamborgir');
           doges = document.querySelectorAll('.doge');
           doges.forEach(function (e) {

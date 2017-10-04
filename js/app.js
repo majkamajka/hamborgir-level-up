@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dogeMode = document.querySelector('#doge-mode');
   let selectMenu = true;
   let swiezakIndex = 0;
-  const swiezaki = ['../images/grzyb.jpg', '../images/kalafior.jpg', '../images/truskawka.jpg', '../images/brokul.jpg', ];
+  const swiezaki = ['./images/grzyb.jpg', './images/kalafior.jpg', './images/truskawka.jpg', './images/brokul.jpg', ];
 
 
   class Cat {
@@ -69,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
     showHamborgir() {
       hamborgirIndex = this.getIndex(this.hamborgir.x, this.hamborgir.y);
       swiezakIndex = Math.round(Math.random() * (swiezaki.length - 1));
-      console.log(swiezakIndex);
       if (this.dogeIndexes.includes(hamborgirIndex)) {
         this.hamborgir = new Hamborgir();
         this.showHamborgir();
@@ -78,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.board[hamborgirIndex].style.backgroundImage = `url(${swiezaki[swiezakIndex]})`;
         //this.board[hamborgirIndex].
         //this.board[hamborgirIndex].style.backgroundImage = "images/cat.png";
-        console.log(this.board[hamborgirIndex]);
+        //console.log(this.board[hamborgirIndex]);
       }
     }
 
@@ -171,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.cat.y = -1;
         document.querySelector('#over').classList.remove('invisible');
         document.querySelector('#over .over span').innerText = this.score;
+        document.querySelector('.hamborgir').style.backgroundImage = "";
         document.querySelector('.hamborgir').classList.remove('hamborgir');
         doges = document.querySelectorAll('.doge');
         doges.forEach((e) => e.classList.remove('doge'));
